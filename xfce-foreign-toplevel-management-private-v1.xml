@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xfce_foreign_toplevel_management_private_v1">
+  <copyright>
+    Copyright © 2024 Brian Tarricone &lt;brian@tarricone.org&gt;
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the
+    next paragraph) shall be included in all copies or substantial
+    portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+    BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </copyright>
+
+  <interface name="xfce_foreign_toplevel_manager_private_v1" version="1">
+    <description summary="Xfce output extensions">
+      This protocol advertises extensions to the existing
+      wlr-foreign-toplevel-management protocol.
+
+      It is intended to be private to the Xfce desktop implementation, and
+      should not be used by other applications. This protocol may introduce
+      incompatible changes at any time, without warning, and without following
+      normal, accepted guidelines about Wayland protocol versioning.
+    </description>
+
+    <request name="get_xfce_foreign_toplevel_handle">
+      <description summary="Fetches a new xfce_foreign_toplevel_handle_v1 instance">
+        This creates a new xfce_foreign_toplevel_handle_v1 instance for the
+        given zwlr_foreign_toplevel_handle_v1 object.
+      </description>
+      <arg name="id" type="new_id" interface="xfce_foreign_toplevel_handle_v1"/>
+      <arg name="foreign_toplevel_handle" type="object" interface="zwlr_foreign_toplevel_handle_v1"/>
+    </request>
+  </interface>
+
+  <interface name="xfce_foreign_toplevel_handle_v1" version="1">
+    <enum name="state">
+      <description summary="Extended toplevel state information">
+        This enumeration includes toplevel states that are not a part of the
+        base xdg-toplevel interface.
+      </description>
+      <entry name="shaded" value="0" summary="The toplevel is 'rolled up' or 'shaded', usually meaning the window's title bar is visible, but the contents are not"/>
+      <entry name="skip_pager" value="1" summary="The toplevel should not be shown in the desktop pager view"/>
+      <entry name="skip_tasklist" value="2" summary="The toplevel should not be shown in a desktop task or window list"/>
+      <entry name="sticky" value="3" summary="The toplevel should be shown on all workspaces within its workspace group"/>
+      <entry name="above" value="4" summary="The toplevel should be stacked above other windows"/>
+      <entry name="below" value="5" summary="The toplevel should be stacked below other windows"/>
+    </enum>
+
+    <request name="set_shaded">
+      <description summary="Sets the toplevel's shaded state"/>
+    </request>
+
+    <request name="unset_shaded">
+      <description summary="Unsets the toplevel's shaded state"/>
+    </request>
+
+    <request name="set_skip_pager">
+      <description summary="Sets the toplevel's skip_pager state"/>
+    </request>
+
+    <request name="unset_skip_pager">
+      <description summary="Unsets the toplevel's skip_pager state"/>
+    </request>
+
+    <request name="set_skip_tasklist">
+      <description summary="Sets the toplevel's skip_tasklist state"/>
+    </request>
+
+    <request name="unset_skip_tasklist">
+      <description summary="Unsets the toplevel's skip_tasklist state"/>
+    </request>
+
+    <request name="set_sticky">
+      <description summary="Sets the toplevel's sticky state"/>
+    </request>
+
+    <request name="unset_sticky">
+      <description summary="Unsets the toplevel's sticky state"/>
+    </request>
+
+    <request name="set_above">
+      <description summary="Sets the toplevel's above state"/>
+    </request>
+
+    <request name="unset_above">
+      <description summary="Unsets the toplevel's above state"/>
+    </request>
+
+    <request name="set_below">
+      <description summary="Sets the toplevel's below state"/>
+    </request>
+
+    <request name="unset_below">
+      <description summary="Unsets the toplevel's below state"/>
+    </request>
+
+    <event name="state">
+      <description summary="Emitted when the toplevel's state changes">
+        After all property changes have been made on this toplevel, the
+        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
+        only receive a single done event per set of property changes; that is,
+        the done event related to events sent on the
+        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
+        events emitted on this interface as well.
+      </description>
+      <arg name="state" type="array" summary="List of active states from the state enum"/>
+    </event>
+
+    <event name="icon_name">
+      <description summary="Emitted when the toplevel's icon name has changed">
+        If a themed icon name is set on this toplevel, this event will be
+        emitted to inform clients of the toplevel's icon.
+
+        This event requires the xdg-toplevel-icon protocol, or a similar
+        protocol that allows applications to associate icon names with their
+        toplevels.
+
+        After all property changes have been made on this toplevel, the
+        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
+        only receive a single done event per set of property changes; that is,
+        the done event related to events sent on the
+        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
+        events emitted on this interface as well.
+      </description>
+      <arg name="handle" type="object" interface="wlr_foreign_toplevel_handle_v1"/>
+      <arg name="name" type="string"/>
+    </event>
+
+    <event name="icon">
+      <description summary="Emitted when the toplevel's icon pixel data has changed">
+        If raw icon pixel data is set on this toplevel, this event will be
+        emitted for each size/scale combination of icon data known to the
+        compositor.
+
+        The pixel data will be sent in RGBA format, with 8 bits per channel (4
+        bytes per pixel).
+
+        The provided file descriptor can be mapped, with a size determined by
+        multiplying the stride and height.
+
+        Implementations that do not support different renderings at different UI
+        scale factors will always send 1 for the scale argument.
+
+        This event requires the xdg-toplevel-icon protocol, or a similar
+        protocol that allows applications to associate icon pixel data with
+        their toplevels.
+
+        After all property changes have been made on this toplevel, the
+        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
+        only receive a single done event per set of property changes; that is,
+        the done event related to events sent on the
+        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
+        events emitted on this interface as well.
+      </description>
+      <arg name="handle" type="object" interface="wlr_foreign_toplevel_handle_v1"/>
+      <arg name="icon_data" type="fd" summary="A file descriptor that can be mapped into memory"/>
+      <arg name="scale" type="uint" summary="The UI scale factor this pixel data corresponds to"/>
+      <arg name="width" type="uint" summary="Width of the icon, in pixels"/>
+      <arg name="height" type="uint" summary="Height of the icon, in pixels"/>
+      <arg name="stride" type="uint" summary="Number of bytes in each row of pixel data"/>
+    </event>
+  </interface>
+</protocol>

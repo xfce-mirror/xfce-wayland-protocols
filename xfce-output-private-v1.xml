@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xfce_output_private_v1">
+  <copyright>
+    Copyright © 2024 Brian Tarricone &lt;brian@tarricone.org&gt;
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the
+    next paragraph) shall be included in all copies or substantial
+    portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+    BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </copyright>
+
+  <interface name="xfce_output_manager_private_v1" version="1">
+    <description summary="Xfce output extensions">
+      This protocol advertises extensions to the existing wl_output and
+      xdg_output protocols.
+
+      It is intended to be private to the Xfce desktop implementation, and
+      should not be used by other applications. This protocol may introduce
+      incompatible changes at any time, without warning, and without following
+      normal, accepted guidelines about Wayland protocol versioning.
+    </description>
+
+    <event name="primary_output">
+      <description summary="Emitted when the primary output changes">
+        The user or compositor may have designated an output as "primary", which
+        is the output that might usually hold the desktop's main UI elements,
+        like a panel or dock.
+      </description>
+      <arg name="primary_output" type="object" interface="wl_output" summary="The new primary output"/>
+    </event>
+
+    <request name="get_xfce_output">
+      <description summary="Fetches a new xfce_output_v1 instance">
+        This creates a new xfce_output_v1 object for the given wl_output.
+      </description>
+      <arg name="id" type="new_id" interface="xfce_output_v1"/>
+      <arg name="output" type="object" interface="wl_ouput" summary="Output to request a xfce_output_v1 object for"/>
+    </request>
+  </interface>
+
+  <interface name="xfce_output_v1" version="1">
+    <event name="serial">
+      <description summary="Advertises the serial number of a device">
+        Emitted when the serial number (if available) of the device attached to
+        the output has changed. In practice, this should only happen once after
+        the xfce_output_v1 object has been created, since a device serial number
+        should never change while it is connected.
+
+        Once all properties on this interface have been advertised, the
+        compositor will send a wl_output done event, similar to how wl_output
+        and xdg_output (as of version 3) work. So for example, if you've bound
+        to the wl_output, xdg_output (at version 3 or higher), and
+        xfce_output_v1, you should expect 3 wl_output done events any time a
+        property on the output changes.
+      </description>
+      <arg name="serial" type="string"/>
+    </event>
+
+    <event name="edid">
+      <description summary="Advertises the EDID of a device">
+        Emitted when the raw EDID data (if available) of the device attached to
+        the output has changed. In practice, this should only happen once after
+        the xfce_output_v1 object has been created, since a device's EDID data
+        should never change while it is connected.
+
+        The EDID data is raw binary data exposed by the monitor's hardware and
+        will need to be parsed in order to be useful.
+
+        Once all properties on this interface have been advertised, the
+        compositor will send a wl_output done event, similar to how wl_output
+        and xdg_output (as of version 3) work. So for example, if you've bound
+        to the wl_output, xdg_output (at version 3 or higher), and
+        xfce_output_v1, you should expect 3 wl_output done events any time a
+        property on the output changes.
+      </description>
+      <arg name="edid" type="fd" summary="A file descriptor that can be mapped into memory"/>
+      <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
+    </event>
+
+    <event name="seat_enter">
+      <description summary="Emitted when a seat enters this output">
+        It is up to the compositor to define exactly what this means, but in
+        general it means that focus is on a surface on this output, whether
+        keyboard or pointer focus. It could also mean that the seat's pointer
+        has moved from one output to another, even if keyboard focus has not.
+
+        This "seat focus" can only be present on one output at a time; aside
+        from the first ever instance of this event, the compositor will always
+        send a seat_leave event before the next seat_enter.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </event>
+
+    <event name="seat_leave">
+      <description summary="Emitted when a seat leaves this output">
+        It is up to the compositor to define exactly what this means, but in
+        general it means that focus has left a surface on this output (and is
+        about to move to a surface on another output), or simply that the
+        seat's pointer position is no longer within this output.
+
+        This "seat focus" can only be present on one output at a time; aside
+        from the first ever instance of this event, the compositor will always
+        send a seat_leave event before the next seat_enter.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </event>
+  </interface>
+</protocol>
