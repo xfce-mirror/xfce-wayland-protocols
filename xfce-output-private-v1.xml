@@ -34,6 +34,8 @@
       should not be used by other applications. This protocol may introduce
       incompatible changes at any time, without warning, and without following
       normal, accepted guidelines about Wayland protocol versioning.
+
+      This protocol depends on the xdg_output protocol.
     </description>
 
     <event name="primary_output">
@@ -47,10 +49,10 @@
 
     <request name="get_xfce_output">
       <description summary="Fetches a new xfce_output_v1 instance">
-        This creates a new xfce_output_v1 object for the given wl_output.
+        This creates a new xfce_output_v1 object for the given xdg_output.
       </description>
       <arg name="id" type="new_id" interface="xfce_output_v1"/>
-      <arg name="output" type="object" interface="wl_ouput" summary="Output to request a xfce_output_v1 object for"/>
+      <arg name="output" type="object" interface="xdg_ouput" summary="Output to request a xfce_output_v1 object for"/>
     </request>
   </interface>
 
