@@ -93,6 +93,32 @@
       <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
     </event>
 
+    <event name="workarea_size">
+      <description summary="Advertises the usable space on the output">
+        An output's workarea is the area that is usable for the display of
+        regular surfaces. For example, a panel or dock may reserve space at the
+        edge of the screen where other surfaces should not be placed, so the
+        area taken up by the panel or dock would be excluded by the workkarea.
+
+        For most applications, merely knowing the size of the workarea is enough
+        (for example, to calculate how many notifications can be shown in a
+        single column on screen), and withholding coordinates avoids leaking
+        information about the location of panels or docks.
+
+        Sizes are presented in logical coordinates that may be scaled (see
+        xdg_output.logical_size for details).
+
+        Once all properties on this interface have been advertised, the
+        compositor will send a wl_output done event, similar to how wl_output
+        and xdg_output (as of version 3) work. So for example, if you've bound
+        to the wl_output, xdg_output (at version 3 or higher), and
+        xfce_output_v1, you should expect 3 wl_output done events any time a
+        property on the output changes.
+      </description>
+      <arg name="width" type="uint" summary="Width of the workarea"/>
+      <arg name="height" type="uint" summary="Height of the workarea"/>
+    </event>
+
     <event name="seat_enter">
       <description summary="Emitted when a seat enters this output">
         It is up to the compositor to define exactly what this means, but in
