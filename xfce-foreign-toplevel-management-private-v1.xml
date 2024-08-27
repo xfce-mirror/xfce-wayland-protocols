@@ -108,6 +108,15 @@
       <description summary="Unsets the toplevel's below state"/>
     </request>
 
+    <request name="move_to_output">
+      <description summary="Moves the toplevel to another output">
+        This has no effect if the toplevel is already on the specified output.
+
+        The compositor may choose to ignore this request.
+      </description>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+
     <event name="state">
       <description summary="Emitted when the toplevel's state changes">
         After all property changes have been made on this toplevel, the
