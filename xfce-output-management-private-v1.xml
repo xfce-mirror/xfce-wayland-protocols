@@ -36,26 +36,70 @@
       normal, accepted guidelines about Wayland protocol versioning.
 
       This protocol depends on the wlr_output_management_v1 protocol.
+
+      Clients that wish to use it MAY bind to both wlr_output_manager_v1 and
+      xfce_output_manager_private_v1, but MUST then ignore any events on
+      wlr_output_manager_v1. This allows for simplicity in the client
+      implementation. For ease of use, the client should immediately release
+      any wlr_output_head_v1 instances received from the wlr_output_manager_v1
+      global, and, if sharing the same wlr_output_head_v1 listener between the
+      two manager instances, take care to avoid confusing head instances between
+      the two managers.
+
+      Clients SHOULD still use the wlr_output_manager_v1 instance to create
+      wlr_output_configuration_v1 objects.
     </description>
 
-    <request name="get_xfce_output_head">
-      <description summary="Fetches a new xfce_output_head_private_v1 instance">
-        This creates a new xfce_output_head_private_v1 object for the given
-        wlr_output_head_v1.
+    <request name="stop">
+      <description summary="Stop sending events">
+        Asks the manager to stop sending further events. The manager may
+        continue to send events until sending the next done event, after which
+        it will not send further events.
+
+        The client must not send any requests after this one.
       </description>
-      <arg name="id" type="new_id" interface="xfce_output_head_private_v1"/>
-      <arg name="head" type="object" interface="zwlr_output_head_v1" summary="Head to request a xfce_output_v1 object for"/>
     </request>
 
-    <request name="destroy" type="destructor">
-      <description summary="Destroy the manager instance">
-        This request indicates that the client will no longer use this manager.
-        object.
+    <event name="head">
+      <description summary="Notifies the client of a new head">
+        This provides the client with both wlr_output_head_v1 and
+        xfce_output_private_v1 instances, and will immediately start sending
+        events on both heads.
+
+        Note that the interface version of wlr_output_head_v1 instances created
+        by this protocol is fixed at version 4.
       </description>
-    </request>
+      <arg name="wlr_head" type="new_id" interface="zwlr_output_head_v1"/>
+      <arg name="xfce_head" type="new_id" interface="xfce_output_head_private_v1"/>
+    </event>
+
+    <event name="done">
+      <description summary="Sent all information about current configuration">
+        This indicates that the server has finished sending updates in the
+        current atomic batch of changes.
+
+        The serial is used when calling
+        wlr_output_manager_v1.create_configuration.
+
+        See the documentation for wlr_output_manager_v1.done and
+        wlr_output_configuration_v1.create_configuration for more information.
+      </description>
+      <arg name="serial" type="uint"/>
+    </event>
   </interface>
 
   <interface name="xfce_output_head_private_v1" version="1">
+    <description summary="An output head with extra information">
+      This describes a single output head, and is an extension interface along
+      side wlr_output_head_v1, and corresponds with the wlr_output_head_v1 sent
+      with it in the xfce_output_manager_private_v1.head event.
+
+      The lifetime of the wlr and xfce head instances are tied together; when
+      you receive a wlr_output_head_v1.finished event, that indicates that the
+      corresponding xfce_output_head_private_v1 instance is also finished, and
+      you should call release on both.
+    </description>
+
     <event name="edid">
       <description summary="Advertises the EDID of a device">
         Emitted on creation of the xfce_output_head_private_v1 instance.
@@ -63,32 +107,18 @@
         The EDID data is raw binary data exposed by the monitor's hardware and
         will need to be parsed in order to be useful.
 
-        Since the EDID will never change, it is safe to immediately send a
-        release release after receiving this event.
+        Since the EDID will never change during the lifetime of this head
+        object, it is safe to immediately send a release after receiving this
+        event.
       </description>
       <arg name="fd" type="fd" summary="A file descriptor that can be mapped into memory"/>
       <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
     </event>
 
-    <event name="done">
-      <description summary="Sent all information about current configuration">
-        This event indicates that the head has sent all information available
-        about itself.
-      </description>
-    </event>
-
-    <event name="finished">
-      <description summary="The head has disappeared">
-        This event indicates that the head is no longer available. The head
-        object becomes inert. Clients should send a release request and release
-        any resources associated with it.
-      </description>
-    </event>
-
     <request name="release" type="destructor">
       <description summary="Release the head instance">
-        This request indicates that the client will no longer use this head.
-        object.
+        This request indicates to the compositor that the client will no longer
+        use this head object.
       </description>
     </request>
   </interface>
