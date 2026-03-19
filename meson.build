@@ -7,6 +7,7 @@ project(
 pkgdatadir = get_option('prefix') / get_option('datadir') / 'xfce4' / 'xfce-wayland-protocols'
 install_data(
   'xfce-foreign-toplevel-management-private-v1.xml',
+  'xfce-output-management-private-v1.xml',
   'xfce-output-private-v1.xml',
   install_dir: pkgdatadir,
 )

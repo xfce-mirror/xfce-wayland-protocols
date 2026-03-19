@@ -74,27 +74,6 @@
       <arg name="serial" type="string"/>
     </event>
 
-    <event name="edid">
-      <description summary="Advertises the EDID of a device">
-        Emitted when the raw EDID data (if available) of the device attached to
-        the output has changed. In practice, this should only happen once after
-        the xfce_output_v1 object has been created, since a device's EDID data
-        should never change while it is connected.
-
-        The EDID data is raw binary data exposed by the monitor's hardware and
-        will need to be parsed in order to be useful.
-
-        Once all properties on this interface have been advertised, the
-        compositor will send a wl_output done event, similar to how wl_output
-        and xdg_output (as of version 3) work. So for example, if you've bound
-        to the wl_output, xdg_output (at version 3 or higher), and
-        xfce_output_v1, you should expect 3 wl_output done events any time a
-        property on the output changes.
-      </description>
-      <arg name="edid" type="fd" summary="A file descriptor that can be mapped into memory"/>
-      <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
-    </event>
-
     <event name="workarea_size">
       <description summary="Advertises the usable space on the output">
         An output's workarea is the area that is usable for the display of
