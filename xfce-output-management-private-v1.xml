@@ -60,17 +60,39 @@
       </description>
     </request>
 
-    <event name="head">
-      <description summary="Notifies the client of a new head">
-        This provides the client with both wlr_output_head_v1 and
-        xfce_output_private_v1 instances, and will immediately start sending
-        events on both heads.
+    <event name="wlr_head">
+      <description summary="Notifies the client of a new head (first event)">
+        This provides the client with the wlr_output_head_v1 instance associated
+        with an output.
 
         Note that the interface version of wlr_output_head_v1 instances created
         by this protocol is fixed at version 4.
+
+        This is a separate event from xfce_head because the Wayland protocol only
+        allows for a single new_id-type argument in each request or event. This
+        event is guaranteed to be sent before the xfce_head event for the same
+        output.
+
+        The compositor guarantees that the next event will be an xfce_head
+        event.
       </description>
       <arg name="wlr_head" type="new_id" interface="zwlr_output_head_v1"/>
+    </event>
+
+    <event name="xfce_head">
+      <description summary="Notifies the client of a new head (second event)">
+        This provides the client with the xfce_output_private_v1 instance
+        associated with an output.
+
+        This is a separate event from wlr_head because the Wayland protocol only
+        allows for a single new_id-type argument in each request or event. You
+        can use the wlr_head argument in order to match the xfce_head with a
+        previously-sent wlr_head event.
+
+        This event is guaranteed to be sent after each wlr_head event.
+      </description>
       <arg name="xfce_head" type="new_id" interface="xfce_output_head_private_v1"/>
+      <arg name="wlr_head" type="object" interface="zwlr_output_head_v1"/>
     </event>
 
     <event name="done">
