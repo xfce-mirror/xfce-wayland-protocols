@@ -60,39 +60,16 @@
       </description>
     </request>
 
-    <event name="wlr_head">
-      <description summary="Notifies the client of a new head (first event)">
-        This provides the client with the wlr_output_head_v1 instance associated
-        with an output.
-
-        Note that the interface version of wlr_output_head_v1 instances created
-        by this protocol is fixed at version 4.
-
-        This is a separate event from xfce_head because the Wayland protocol only
-        allows for a single new_id-type argument in each request or event. This
-        event is guaranteed to be sent before the xfce_head event for the same
-        output.
-
-        The compositor guarantees that the next event will be an xfce_head
-        event.
-      </description>
-      <arg name="wlr_head" type="new_id" interface="zwlr_output_head_v1"/>
-    </event>
-
-    <event name="xfce_head">
+    <event name="head">
       <description summary="Notifies the client of a new head (second event)">
         This provides the client with the xfce_output_private_v1 instance
         associated with an output.
 
-        This is a separate event from wlr_head because the Wayland protocol only
-        allows for a single new_id-type argument in each request or event. You
-        can use the wlr_head argument in order to match the xfce_head with a
-        previously-sent wlr_head event.
-
-        This event is guaranteed to be sent after each wlr_head event.
+        The client can use the 'name' argument to correlate
+        xfce_output_head_private_v1 and wlr_output_head_v1 instances.
       </description>
-      <arg name="xfce_head" type="new_id" interface="xfce_output_head_private_v1"/>
-      <arg name="wlr_head" type="object" interface="zwlr_output_head_v1"/>
+      <arg name="head" type="new_id" interface="xfce_output_head_private_v1"/>
+      <arg name="name" type="string"/>
     </event>
 
     <event name="done">
@@ -101,25 +78,28 @@
         current atomic batch of changes.
 
         The serial is used when calling
-        wlr_output_manager_v1.create_configuration.
+        wlr_output_manager_v1.create_configuration, and should be the same
+        serial received with correlated updates from wlr_output_manager_v1.
 
         See the documentation for wlr_output_manager_v1.done and
         wlr_output_configuration_v1.create_configuration for more information.
       </description>
       <arg name="serial" type="uint"/>
     </event>
+
+    <event name="finished">
+      <description summary="The manager is shutting down">
+        This event is emitted when the manager intends to stop sending events
+        permanently.
+      </description>
+    </event>
+
   </interface>
 
   <interface name="xfce_output_head_private_v1" version="1">
     <description summary="An output head with extra information">
       This describes a single output head, and is an extension interface along
-      side wlr_output_head_v1, and corresponds with the wlr_output_head_v1 sent
-      with it in the xfce_output_manager_private_v1.head event.
-
-      The lifetime of the wlr and xfce head instances are tied together; when
-      you receive a wlr_output_head_v1.finished event, that indicates that the
-      corresponding xfce_output_head_private_v1 instance is also finished, and
-      you should call release on both.
+      side wlr_output_head_v1.
     </description>
 
     <event name="edid">
@@ -135,6 +115,13 @@
       </description>
       <arg name="fd" type="fd" summary="A file descriptor that can be mapped into memory"/>
       <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
+    </event>
+
+    <event name="finished">
+      <description summary="The head has disappeared">
+        This event is emitted when the head is no longer available. Clients
+        should stop using it and send the release request.
+      </description>
     </event>
 
     <request name="release" type="destructor">
