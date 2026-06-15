@@ -26,9 +26,11 @@
   </copyright>
 
   <interface name="xfce_foreign_toplevel_manager_private_v1" version="1">
-    <description summary="Xfce output extensions">
+    <description summary="Extensions to wlr-foreign-toplevel-management">
       This protocol advertises extensions to the existing
-      wlr-foreign-toplevel-management protocol.
+      wlr-foreign-toplevel-management protocol, and provides a bridge to the
+      ext-workspace protocol, so clients can learn what workspace each toplevel
+      is on.
 
       It is intended to be private to the Xfce desktop implementation, and
       should not be used by other applications. This protocol may introduce
@@ -40,10 +42,39 @@
       <description summary="Fetches a new xfce_foreign_toplevel_handle_v1 instance">
         This creates a new xfce_foreign_toplevel_handle_v1 instance for the
         given zwlr_foreign_toplevel_handle_v1 object.
+
+        On creation of the xfce_foreign_toplevel_handle_v1 instance, all
+        relevant property events will be emitted, followed by the done event, in
+        order to communicate the initial state of the toplevel.
+
+        If a xfce_foreign_toplevel_handle_v1 instance is already bound to the
+        provided wlr_foreign_toplevel_handle_v1 instance, an already_bound
+        protocol error is raised.
+
+        The lifecycle of this object is tied to the corresponding
+        zwlr_foreign_toplevel_handle_v1 object. When the
+        zwlr_foreign_toplevel_handle_v1.closed event is emitted, the returned
+        xfce_foreign_toplevel_handle_v1 instance will also become inert and
+        should be destroyed.
       </description>
       <arg name="id" type="new_id" interface="xfce_foreign_toplevel_handle_v1"/>
       <arg name="foreign_toplevel_handle" type="object" interface="zwlr_foreign_toplevel_handle_v1"/>
     </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroys the manager object">
+        Indicates to the compositor that the client no longer wishes to receive
+        events on this interface.
+
+        The client still may receive more events that have been queued before
+        the compositor processes this event.
+      </description>
+    </request>
+
+    <enum name="error">
+      <description summary="Protocol errors for the xfce_foreign_toplevel_manager_private_v1 interface"/>
+      <entry name="already_bound" value="0" summary="The wlr_foreign_toplevel_handle_v1 already has a bound xfce_foreign_toplevel_handle_v1 instance"/>
+    </enum>
   </interface>
 
   <interface name="xfce_foreign_toplevel_handle_v1" version="1">
@@ -58,6 +89,7 @@
       <entry name="sticky" value="3" summary="The toplevel should be shown on all workspaces within its workspace group"/>
       <entry name="above" value="4" summary="The toplevel should be stacked above other windows"/>
       <entry name="below" value="5" summary="The toplevel should be stacked below other windows"/>
+      <entry name="demands_attention" value="6" summary="The toplevel has some urgent information waiting"/>
     </enum>
 
     <request name="set_shaded">
@@ -85,7 +117,9 @@
     </request>
 
     <request name="set_sticky">
-      <description summary="Sets the toplevel's sticky state"/>
+      <description summary="Sets the toplevel's sticky state">
+        A sticky toplevel appears on all workspaces in its workspace group.
+      </description>
     </request>
 
     <request name="unset_sticky">
@@ -93,7 +127,12 @@
     </request>
 
     <request name="set_above">
-      <description summary="Sets the toplevel's above state"/>
+      <description summary="Sets the toplevel's above state">
+        The window will be kept in a layer above other regularly-stacked windows.
+
+        This state is mutually-exclusive with the "below" state; setting the
+        "above" state will unset "below" if it is set.
+      </description>
     </request>
 
     <request name="unset_above">
@@ -101,7 +140,12 @@
     </request>
 
     <request name="set_below">
-      <description summary="Sets the toplevel's below state"/>
+      <description summary="Sets the toplevel's below state">
+        The window will be kept in a layer below other regularly-stacked windows.
+
+        This state is mutually-exclusive with the "above" state; setting the
+        "below" state will unset "above" if it is set.
+      </description>
     </request>
 
     <request name="unset_below">
@@ -117,14 +161,59 @@
       <arg name="output" type="object" interface="wl_output"/>
     </request>
 
+    <request name="move_to_workspace">
+      <description summary="Moves the toplevel to another workspace">
+        Requests that the compositor move the toplevel to the specified workspace.
+
+        Sticky windows cannot be moved to a particular workspace. The sticky
+        state must first be unset.
+
+        The compositor may choose to ignore this request.
+      </description>
+      <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
+    </request>
+
+    <request name="get_icon_pixels">
+      <description summary="Requests pixel data for one of the toplevel's icons">
+        Requests an xfce_foreign_toplevel_icon_pixels_v1 handle for this toplevel.
+
+        The provided buffer must be a wl_shm buffer with format argb8888, and
+        must be sized appropriately for the size and scale arguments. That is,
+        the width and height must be equal to (scale * size), and the stride
+        must be at least (scale * size * 4).
+
+        The size/scale pair must be a pair received in a previously received
+        icon_size event, and that event must not have been obsoleted by a
+        further icon event grouping.
+
+        The client must not modify or destroy the passed buffer until it has
+        received the ready or failed events on the returned
+        xfce_foreign_toplevel_icon_pixels_v1 instance.
+      </description>
+      <arg name="id" type="new_id" interface="xfce_foreign_toplevel_icon_pixels_v1"/>
+      <arg name="size" type="uint" summary="The width/height of the requested icon"/>
+      <arg name="scale" type="uint" summary="The UI scale factor for the icon"/>
+      <arg name="buffer" type="object" interface="wl_buffer" summary="A wl_shm buffer at the appropriate size"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroys the xfce_foreign_toplevel_handle_v1 object">
+        Destroys the object.
+
+        The client should call this when it no longer wishes to receive events
+        for this toplevel, or after the zwlr_foreign_toplevel_handle_v1.closed
+        event has been received.
+      </description>
+    </request>
+
     <event name="state">
       <description summary="Emitted when the toplevel's state changes">
+        Reports the current state of the toplevel. This state should be
+        combined with the state reported by wlr_foreign_toplevel_handle_v1 in
+        order to see the complete state of the toplevel.
+
         After all property changes have been made on this toplevel, the
-        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
-        only receive a single done event per set of property changes; that is,
-        the done event related to events sent on the
-        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
-        events emitted on this interface as well.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
       <arg name="state" type="array" summary="List of active states from the state enum"/>
     </event>
@@ -134,53 +223,174 @@
         If a themed icon name is set on this toplevel, this event will be
         emitted to inform clients of the toplevel's icon.
 
+        This event is mutually-exclusive with the icon_sizes and no_icon events,
+        and receiving it overrides the other two states.
+
+        When a toplevel's icon changes, this event (or one of the other two)
+        will be emitted within a "done" group. The client should treat any
+        icon event grouping as fully replacing any previously-sent icon event
+        grouping.
+
         This event requires the xdg-toplevel-icon protocol, or a similar
         protocol that allows applications to associate icon names with their
         toplevels.
 
         After all property changes have been made on this toplevel, the
-        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
-        only receive a single done event per set of property changes; that is,
-        the done event related to events sent on the
-        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
-        events emitted on this interface as well.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
-      <arg name="handle" type="object" interface="wlr_foreign_toplevel_handle_v1"/>
       <arg name="name" type="string"/>
     </event>
 
-    <event name="icon">
-      <description summary="Emitted when the toplevel's icon pixel data has changed">
+    <event name="icon_sizes">
+      <description summary="Advertises the size and scale of a raster icon available for this toplevel">
         If raw icon pixel data is set on this toplevel, this event will be
         emitted for each size/scale combination of icon data known to the
         compositor.
 
-        The pixel data will be sent in RGBA format, with 8 bits per channel (4
-        bytes per pixel).
+        This event is mutually-exclusive with the icon_name and no_icon events,
+        and receiving it overrides the other two states.
 
-        The provided file descriptor can be mapped, with a size determined by
-        multiplying the stride and height.
+        If the client wishes to fetch a particular size and scale of icon, it
+        can use the get_icon_pixels request.
 
-        Implementations that do not support different renderings at different UI
-        scale factors will always send 1 for the scale argument.
+        If the set of icon sizes/scales changes (that is, new scales/sizes are
+        added, or some existing scales/sizes are removed), events describing the
+        entire list of available sizes/scales will be re-emitted.
+
+        The entire set will also be re-emitted if the icon pixel data for any
+        size/scale combination changes.
+
+        When a toplevel's icon changes, this event (or one of the other two)
+        will be emitted within a "done" group. The client should treat any
+        icon event grouping as fully replacing any previously-sent icon event
+        grouping.
 
         This event requires the xdg-toplevel-icon protocol, or a similar
         protocol that allows applications to associate icon pixel data with
         their toplevels.
 
         After all property changes have been made on this toplevel, the
-        zwlr_foreign_toplevel_handle_v1's done event will be sent. Clients will
-        only receive a single done event per set of property changes; that is,
-        the done event related to events sent on the
-        zwlr_foreign_toplevel_handle_v1 instance will be "delayed" to encompass
-        events emitted on this interface as well.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
-      <arg name="handle" type="object" interface="wlr_foreign_toplevel_handle_v1"/>
-      <arg name="icon_data" type="fd" summary="A file descriptor that can be mapped into memory"/>
+      <arg name="size" type="uint" summary="Width and height of the icon, in pixels"/>
       <arg name="scale" type="uint" summary="The UI scale factor this pixel data corresponds to"/>
-      <arg name="width" type="uint" summary="Width of the icon, in pixels"/>
-      <arg name="height" type="uint" summary="Height of the icon, in pixels"/>
-      <arg name="stride" type="uint" summary="Number of bytes in each row of pixel data"/>
     </event>
+
+    <event name="no_icon">
+      <description summary="Informs clients that the toplevel has no custom icon">
+        The client should instead use the toplevel's app_id as reported by
+        wlr_foreign_toplevel_handle_v1 in order to determine a suitable icon.
+
+        This event is mutually-exclusive with the icon_name and icon_sizes
+        events, and receiving it overrides the other two states.
+
+        When a toplevel's icon changes, this event (or one of the other two)
+        will be emitted within a "done" group. The client should treat any
+        icon event grouping as fully replacing any previously-sent icon event
+        grouping.
+
+        After all property changes have been made on this toplevel, the
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
+      </description>
+    </event>
+
+    <event name="workspace_enter">
+      <description summary="Emitted when the toplevel enters a workspace">
+        Emitted when this toplevel is placed on the specified workspace.
+
+        A toplevel can either be on only one workspace, or on all workspaces in
+        a particular group.
+
+        If a workspace is made "sticky", that is, placed on all workspaces, this
+        event will not be emitted for any workspaces. Instead, the state event
+        will include the sticky state.
+
+        If the client has not yet bound the ext_workspace_manager_v1 global,
+        and/or the ext_workspace_handle_v1 instances have not been created for
+        the client, this event will be deferred until the workspace handle
+        instances are created and available to the client.
+
+        After all property changes have been made on this toplevel, the
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
+      </description>
+      <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
+    </event>
+
+    <event name="workspace_leave">
+      <description summary="Emitted when the toplevel leaves a workspace">
+        Emitted when this toplevel is removed from the specified workspace.
+
+        A toplevel can either be on only one workspace, or on all workspaces in
+        a particular group.
+
+        If a workspace is made "sticky", that is, placed on all workspaces, this
+        event will be emitted for the previous single workspace it was on,
+        followed by a new state event that includes the sticky state.
+
+        If the workspace referenced by the ext_workspace_handle_v1 is being
+        destroyed, this event will be sent before the ext_workspace_handle_v1
+        itself is destroyed.
+
+        After all property changes have been made on this toplevel, the
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
+      </description>
+      <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
+    </event>
+
+    <event name="done">
+      <description summary="All pending property changes have been sent">
+        Emitted when a group of property change events have all been sent.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="xfce_foreign_toplevel_icon_pixels_v1" version="1">
+    <description summary="A toplevel icon's pixel data">
+      Provides the pixel data of a toplevel's icon.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroys the xfce_foreign_toplevel_icon_pixels_v1 object">
+        Informs the compositor that the client no longer has a need for this
+        instance.
+
+        If this request is called before the ready or failed events have been
+        received, the compositor will consider the request for pixel data
+        cancelled, and ensure it will not write to or read from the associated
+        buffer after it has processed the destroy request. The ready and failed
+        events will in this case not be emitted at all.
+      </description>
+    </request>
+
+    <event name="ready">
+      <description summary="The icon's pixel data is ready for use">
+        The provided buffer has been populated with the icon's pixel data, and
+        is ready for use.
+
+        The compositor will not update the contents of this buffer after this
+        event is emitted.
+      </description>
+    </event>
+
+    <event name="failed">
+      <description summary="The icon's pixel data could not be provided">
+        The icon's pixel data cannot be provided for the supplied reason.
+
+        The compositor will not update the contents of this buffer after this
+        event is emitted. The buffer contents are undefined after receiving
+        this event.
+
+        The client should destroy this object after receiving this event.
+      </description>
+      <arg name="reason" type="uint" enum="xfce_foreign_toplevel_icon_pixels_error_v1"/>
+    </event>
+
+    <enum name="xfce_foreign_toplevel_icon_pixels_error_v1">
+      <entry name="no_pixel_data" value="0" summary="The associated toplevel does not have any icon pixel data"/>
+      <entry name="invalid_size" value="1" summary="The specified size is not available"/>
+      <entry name="invalid_scale" value="2" summary="The specified scale is not available at the specified size"/>
+      <entry name="invalid_buffer" value="3" summary="The provided buffer did not meet the required constraints"/>
+      <entry name="unknown" value="4" summary="An unexpected error occurred populating the provided buffer's contents"/>
+    </enum>
   </interface>
 </protocol>
