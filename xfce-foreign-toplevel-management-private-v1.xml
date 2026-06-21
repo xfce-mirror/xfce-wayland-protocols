@@ -73,7 +73,8 @@
 
     <enum name="error">
       <description summary="Protocol errors for the xfce_foreign_toplevel_manager_private_v1 interface"/>
-      <entry name="already_bound" value="0" summary="The wlr_foreign_toplevel_handle_v1 already has a bound xfce_foreign_toplevel_handle_v1 instance"/>
+      <entry name="invalid_handle" value="0" summary="The wlr_foreign_toplevel_handle_v1 is invalid"/>
+      <entry name="already_bound" value="1" summary="The wlr_foreign_toplevel_handle_v1 already has a bound xfce_foreign_toplevel_handle_v1 instance"/>
     </enum>
   </interface>
 
