@@ -101,22 +101,6 @@
       <description summary="Unsets the toplevel's shaded state"/>
     </request>
 
-    <request name="set_skip_pager">
-      <description summary="Sets the toplevel's skip_pager state"/>
-    </request>
-
-    <request name="unset_skip_pager">
-      <description summary="Unsets the toplevel's skip_pager state"/>
-    </request>
-
-    <request name="set_skip_tasklist">
-      <description summary="Sets the toplevel's skip_tasklist state"/>
-    </request>
-
-    <request name="unset_skip_tasklist">
-      <description summary="Unsets the toplevel's skip_tasklist state"/>
-    </request>
-
     <request name="set_sticky">
       <description summary="Sets the toplevel's sticky state">
         A sticky toplevel appears on all workspaces in its workspace group.
