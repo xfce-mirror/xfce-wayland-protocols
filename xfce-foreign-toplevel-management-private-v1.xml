@@ -353,7 +353,8 @@
         is ready for use.
 
         The compositor will not update the contents of this buffer after this
-        event is emitted.
+        event is emitted. After emitting this event, the object is inert and
+        should be destroyed.
       </description>
     </event>
 
