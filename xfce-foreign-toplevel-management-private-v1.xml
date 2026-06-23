@@ -368,10 +368,10 @@
 
         The client should destroy this object after receiving this event.
       </description>
-      <arg name="reason" type="uint" enum="xfce_foreign_toplevel_icon_pixels_error_v1"/>
+      <arg name="reason" type="uint" enum="failure_reason"/>
     </event>
 
-    <enum name="xfce_foreign_toplevel_icon_pixels_error_v1">
+    <enum name="failure_reason">
       <entry name="no_pixel_data" value="0" summary="The associated toplevel does not have any icon pixel data"/>
       <entry name="invalid_size" value="1" summary="The specified size is not available"/>
       <entry name="invalid_scale" value="2" summary="The specified scale is not available at the specified size"/>
