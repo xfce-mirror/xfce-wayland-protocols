@@ -137,6 +137,28 @@
       <description summary="Unsets the toplevel's below state"/>
     </request>
 
+    <request name="highlight">
+      <description summary="Visually highlights the window">
+        Asks the compositor to visually highlight the window, such as drawing a
+        wireframe or box around its position.
+
+        The compositor may un-highlight any other currently-highlighted window
+        before highlighting this one.
+
+        The compositor is free to ignore the request.
+      </description>
+      <arg name="serial" type="uint" summary="serial of the user interaction that triggered the highlight"/>
+    </request>
+
+    <request name="unhighlight">
+      <description summary="Removes a previously-requested window highlight">
+        Asks the compositor to stop higlighting the window.
+
+        The compositor will ignore this request if the client making this
+        request did not also request the currently-active highlight, if any.
+      </description>
+    </request>
+
     <request name="move_to_output">
       <description summary="Moves the toplevel to another output">
         This has no effect if the toplevel is already on the specified output.
