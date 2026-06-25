@@ -44,8 +44,18 @@
         given zwlr_foreign_toplevel_handle_v1 object.
 
         On creation of the xfce_foreign_toplevel_handle_v1 instance, all
-        relevant property events will be emitted, followed by the done event, in
+        relevant property events will be emitted, followed by the
+        wlr_foreign_toplevel_handle_v1.done event, in
         order to communicate the initial state of the toplevel.
+
+        Note that this will be the second done event:
+        wlr_foreign_toplevel_handle_v1.done will be emitted once for the initial
+        state of properties on the wlr_foreign_toplevel_handle_v1 instance, and
+        then again for properties on the
+        xfce_foreign_toplevel_handle_v1 too. This is unique to the initial
+        settings for each toplevel: for future updates, the wlr and xfce
+        property events will be grouped under a single
+        wlr_foreign_toplevel_handle_v1.done event.
 
         If a xfce_foreign_toplevel_handle_v1 instance is already bound to the
         provided wlr_foreign_toplevel_handle_v1 instance, an already_bound
@@ -220,7 +230,7 @@
         order to see the complete state of the toplevel.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
       <arg name="state" type="array" summary="List of active states from the state enum"/>
     </event>
@@ -243,7 +253,7 @@
         toplevels.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
       <arg name="name" type="string"/>
     </event>
@@ -277,7 +287,7 @@
         their toplevels.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
       <arg name="size" type="uint" summary="Width and height of the icon, in pixels"/>
       <arg name="scale" type="uint" summary="The UI scale factor this pixel data corresponds to"/>
@@ -297,7 +307,7 @@
         grouping.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
     </event>
 
@@ -318,7 +328,7 @@
         instances are created and available to the client.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
       <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
     </event>
@@ -339,15 +349,9 @@
         itself is destroyed.
 
         After all property changes have been made on this toplevel, the
-        xfce_foreign_toplevel_handle_v1's done event will be sent.
+        wlr_foreign_toplevel_handle_v1.done event will be sent.
       </description>
       <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
-    </event>
-
-    <event name="done">
-      <description summary="All pending property changes have been sent">
-        Emitted when a group of property change events have all been sent.
-      </description>
     </event>
   </interface>
 
