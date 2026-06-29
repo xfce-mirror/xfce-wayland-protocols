@@ -44,18 +44,8 @@
         given zwlr_foreign_toplevel_handle_v1 object.
 
         On creation of the xfce_foreign_toplevel_handle_v1 instance, all
-        relevant property events will be emitted, followed by the
-        wlr_foreign_toplevel_handle_v1.done event, in
+        relevant property events will be emitted, followed by the done event, in
         order to communicate the initial state of the toplevel.
-
-        Note that this will be the second done event:
-        wlr_foreign_toplevel_handle_v1.done will be emitted once for the initial
-        state of properties on the wlr_foreign_toplevel_handle_v1 instance, and
-        then again for properties on the
-        xfce_foreign_toplevel_handle_v1 too. This is unique to the initial
-        settings for each toplevel: for future updates, the wlr and xfce
-        property events will be grouped under a single
-        wlr_foreign_toplevel_handle_v1.done event.
 
         If a xfce_foreign_toplevel_handle_v1 instance is already bound to the
         provided wlr_foreign_toplevel_handle_v1 instance, an already_bound
@@ -194,23 +184,13 @@
       <description summary="Requests pixel data for one of the toplevel's icons">
         Requests an xfce_foreign_toplevel_icon_pixels_v1 handle for this toplevel.
 
-        The provided buffer must be a wl_shm buffer with format argb8888, and
-        must be sized appropriately for the size and scale arguments. That is,
-        the width and height must be equal to (scale * size), and the stride
-        must be at least (scale * size * 4).
-
         The size/scale pair must be a pair received in a previously received
         icon_size event, and that event must not have been obsoleted by a
         further icon event grouping.
-
-        The client must not modify or destroy the passed buffer until it has
-        received the ready or failed events on the returned
-        xfce_foreign_toplevel_icon_pixels_v1 instance.
       </description>
       <arg name="id" type="new_id" interface="xfce_foreign_toplevel_icon_pixels_v1"/>
       <arg name="size" type="uint" summary="The width/height of the requested icon"/>
       <arg name="scale" type="uint" summary="The UI scale factor for the icon"/>
-      <arg name="buffer" type="object" interface="wl_buffer" summary="A wl_shm buffer at the appropriate size"/>
     </request>
 
     <request name="destroy" type="destructor">
@@ -230,7 +210,7 @@
         order to see the complete state of the toplevel.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
       <arg name="state" type="array" summary="List of active states from the state enum"/>
     </event>
@@ -240,56 +220,55 @@
         If a themed icon name is set on this toplevel, this event will be
         emitted to inform clients of the toplevel's icon.
 
-        This event is mutually-exclusive with the icon_sizes and no_icon events,
-        and receiving it overrides the other two states.
+        This event is mutually-exclusive with the no_icon event, and receiving
+        it replaces the no-icon state.
 
-        When a toplevel's icon changes, this event (or one of the other two)
-        will be emitted within a "done" group. The client should treat any
-        icon event grouping as fully replacing any previously-sent icon event
-        grouping.
+        When a toplevel's icon changes, this event will be emitted within a
+        "done" group. The client should treat any icon event grouping as fully
+        replacing any previously-sent icon event grouping.
 
         This event requires the xdg-toplevel-icon protocol, or a similar
         protocol that allows applications to associate icon names with their
         toplevels.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
       <arg name="name" type="string"/>
     </event>
 
-    <event name="icon_sizes">
+    <event name="icon_size">
       <description summary="Advertises the size and scale of a raster icon available for this toplevel">
         If raw icon pixel data is set on this toplevel, this event will be
         emitted for each size/scale combination of icon data known to the
         compositor.
 
-        This event is mutually-exclusive with the icon_name and no_icon events,
-        and receiving it overrides the other two states.
+        This event is mutually-exclusive with the no_icon event, and receiving
+        it replaces the no-icon state.
 
         If the client wishes to fetch a particular size and scale of icon, it
         can use the get_icon_pixels request.
 
         If the set of icon sizes/scales changes (that is, new scales/sizes are
         added, or some existing scales/sizes are removed), events describing the
-        entire list of available sizes/scales will be re-emitted.
+        entire list of available sizes/scales will be re-emitted, along with a
+        repeat of the icon_name event (if available).
 
         The entire set will also be re-emitted if the icon pixel data for any
         size/scale combination changes.
 
-        When a toplevel's icon changes, this event (or one of the other two)
-        will be emitted within a "done" group. The client should treat any
-        icon event grouping as fully replacing any previously-sent icon event
-        grouping.
+        When a toplevel's icon changes, this event will be emitted within a
+        "done" group. The client should treat any icon event grouping as fully
+        replacing any previously-sent icon event grouping.
 
         This event requires the xdg-toplevel-icon protocol, or a similar
         protocol that allows applications to associate icon pixel data with
         their toplevels.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
-      <arg name="size" type="uint" summary="Width and height of the icon, in pixels"/>
+      <arg name="size" type="uint" summary="Width and height of the icon, in logical pixels"/>
       <arg name="scale" type="uint" summary="The UI scale factor this pixel data corresponds to"/>
     </event>
 
@@ -298,16 +277,15 @@
         The client should instead use the toplevel's app_id as reported by
         wlr_foreign_toplevel_handle_v1 in order to determine a suitable icon.
 
-        This event is mutually-exclusive with the icon_name and icon_sizes
-        events, and receiving it overrides the other two states.
+        This event is mutually-exclusive with the icon_name and icon_size
+        events, and receiving it clears any previously-advertised icon state.
 
-        When a toplevel's icon changes, this event (or one of the other two)
-        will be emitted within a "done" group. The client should treat any
-        icon event grouping as fully replacing any previously-sent icon event
-        grouping.
+        When a toplevel's icon changes, this event will be emitted within a
+        "done" group. The client should treat any icon event grouping as fully
+        replacing any previously-sent icon event grouping.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
     </event>
 
@@ -328,7 +306,7 @@
         instances are created and available to the client.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
       <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
     </event>
@@ -349,9 +327,15 @@
         itself is destroyed.
 
         After all property changes have been made on this toplevel, the
-        wlr_foreign_toplevel_handle_v1.done event will be sent.
+        xfce_foreign_toplevel_handle_v1's done event will be sent.
       </description>
       <arg name="workspace" type="object" interface="ext_workspace_handle_v1"/>
+    </event>
+
+    <event name="done">
+      <description summary="All pending property changes have been sent">
+        Emitted when a group of property change events have all been sent.
+      </description>
     </event>
   </interface>
 
@@ -363,34 +347,32 @@
     <request name="destroy" type="destructor">
       <description summary="Destroys the xfce_foreign_toplevel_icon_pixels_v1 object">
         Informs the compositor that the client no longer has a need for this
-        instance.
-
-        If this request is called before the ready or failed events have been
-        received, the compositor will consider the request for pixel data
-        cancelled, and ensure it will not write to or read from the associated
-        buffer after it has processed the destroy request. The ready and failed
-        events will in this case not be emitted at all.
+        instance. While this does destroy the object, the compositor may have
+        already sent a pixels or failed event that has not yet been processed by
+        the client, and should be ignored.
       </description>
     </request>
 
-    <event name="ready">
-      <description summary="The icon's pixel data is ready for use">
-        The provided buffer has been populated with the icon's pixel data, and
-        is ready for use.
+    <event name="pixels">
+      <description summary="The icon's pixel data">
+        The pixel data is provided in rgba8888 format, with non-premultiplied alpha.
 
-        The compositor will not update the contents of this buffer after this
-        event is emitted. After emitting this event, the object is inert and
-        should be destroyed.
+        The total size of the mapping can be calculated by multiplying stride
+        with height.
+
+        The compositor will not use this object for any other purpose after
+        sending this event; after reading the pixel data, you should call
+        destroy.
       </description>
+      <arg name="fd" type="fd" summary="A mappable file descriptor containing the pixel data"/>
+      <arg name="width" type="uint" summary="The pixel width of the data"/>
+      <arg name="height" type="uint" summary="The pixel height of the data"/>
+      <arg name="stride" type="uint" summary="The size in bytes of each row of data"/>
     </event>
 
     <event name="failed">
       <description summary="The icon's pixel data could not be provided">
         The icon's pixel data cannot be provided for the supplied reason.
-
-        The compositor will not update the contents of this buffer after this
-        event is emitted. The buffer contents are undefined after receiving
-        this event.
 
         The client should destroy this object after receiving this event.
       </description>
@@ -401,8 +383,7 @@
       <entry name="no_pixel_data" value="0" summary="The associated toplevel does not have any icon pixel data"/>
       <entry name="invalid_size" value="1" summary="The specified size is not available"/>
       <entry name="invalid_scale" value="2" summary="The specified scale is not available at the specified size"/>
-      <entry name="invalid_buffer" value="3" summary="The provided buffer did not meet the required constraints"/>
-      <entry name="unknown" value="4" summary="An unexpected error occurred populating the provided buffer's contents"/>
+      <entry name="unknown" value="3" summary="An unexpected error occurred"/>
     </enum>
   </interface>
 </protocol>
