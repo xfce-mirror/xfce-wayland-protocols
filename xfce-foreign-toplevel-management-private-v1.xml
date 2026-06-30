@@ -355,7 +355,8 @@
 
     <event name="pixels">
       <description summary="The icon's pixel data">
-        The pixel data is provided in rgba8888 format, with non-premultiplied alpha.
+        The pixel data is provided in litte-endian ARGB32 format, with
+        premultiplied alpha.
 
         The total size of the mapping can be calculated by multiplying stride
         with height.
