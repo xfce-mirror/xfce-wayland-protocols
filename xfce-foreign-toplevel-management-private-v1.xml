@@ -382,9 +382,8 @@
 
     <enum name="failure_reason">
       <entry name="no_pixel_data" value="0" summary="The associated toplevel does not have any icon pixel data"/>
-      <entry name="invalid_size" value="1" summary="The specified size is not available"/>
-      <entry name="invalid_scale" value="2" summary="The specified scale is not available at the specified size"/>
-      <entry name="unknown" value="3" summary="An unexpected error occurred"/>
+      <entry name="invalid_args" value="1" summary="The specified size and/or scale is not available"/>
+      <entry name="unknown" value="2" summary="An unexpected error occurred"/>
     </enum>
   </interface>
 </protocol>
