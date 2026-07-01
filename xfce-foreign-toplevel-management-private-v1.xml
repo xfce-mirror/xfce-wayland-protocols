@@ -147,7 +147,7 @@
 
         The compositor is free to ignore the request.
       </description>
-      <arg name="serial" type="uint" summary="serial of the user interaction that triggered the highlight"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="the seat where the requesting client has keyboard or pointer focus"/>
     </request>
 
     <request name="unhighlight">
