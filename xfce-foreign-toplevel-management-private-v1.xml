@@ -309,6 +309,10 @@
         event will not be emitted for any workspaces. Instead, the state event
         will include the sticky state.
 
+        A workspace_enter event will always be preceded by a workspace_leave
+        event, except for the first workspace_enter event received after the
+        object is created.
+
         If the client has not yet bound the ext_workspace_manager_v1 global,
         and/or the ext_workspace_handle_v1 instances have not been created for
         the client, this event will be deferred until the workspace handle
@@ -330,6 +334,9 @@
         If a workspace is made "sticky", that is, placed on all workspaces, this
         event will be emitted for the previous single workspace it was on,
         followed by a new state event that includes the sticky state.
+
+        A workspace_leave event will always be preceded by a workspace_enter
+        event.
 
         If the workspace referenced by the ext_workspace_handle_v1 is being
         destroyed, this event will be sent before the ext_workspace_handle_v1
