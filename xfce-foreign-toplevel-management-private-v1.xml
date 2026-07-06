@@ -168,6 +168,28 @@
       </description>
     </request>
 
+    <request name="move">
+      <description summary="Starts an interactive move">
+        Asks the compositor to start a user-driven move of this toplevel. The
+        user will be able to move the toplevel using whatever facilities the
+        compositor provides.
+
+        The compositor may choose to ignore this request.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat" summary="the seat where the requesting client has keyboard or pointer focus"/>
+    </request>
+
+    <request name="resize">
+      <description summary="Starts an interactive resize">
+        Asks the compositor to start a user-driven resize of this toplevel. The
+        user will be able to resize the toplevel using whatever facilities the
+        compositor provides.
+
+        The compositor may choose to ignore this request.
+      </description>
+      <arg name="seat" type="object" interface="wl_seat" summary="the seat where the requesting client has keyboard or pointer focus"/>
+    </request>
+
     <request name="move_to_output">
       <description summary="Moves the toplevel to another output">
         This has no effect if the toplevel is already on the specified output.
