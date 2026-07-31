@@ -45,6 +45,10 @@
       <arg name="id" type="new_id" interface="xfce_output_v1"/>
       <arg name="output" type="object" interface="zxdg_output_v1" summary="Output to request a xfce_output_v1 object for"/>
     </request>
+
+    <request name="release" type="destructor">
+      <description summary="Informs the compositor the client is done using the manager object"/>
+    </request>
   </interface>
 
   <interface name="xfce_output_v1" version="1">
@@ -62,6 +66,10 @@
       </description>
       <arg name="serial" type="string"/>
     </event>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroys the object"/>
+    </request>
 
     <event name="edid">
       <description summary="Advertises the EDID of a device">
