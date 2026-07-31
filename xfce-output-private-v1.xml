@@ -126,8 +126,6 @@
 
         This event will be emitted at bind time to inform new clients of the
         output the pointer is currently on.
-
-        Note that this event is not part of a wl_output.done event grouping.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </event>
@@ -137,8 +135,6 @@
         The pointer for a seat can only be on one output at a time, so this
         event will never be emitted without being preceded by a pointer_enter
         event on the same object.
-
-        Note that this event is not part of a wl_output.done event grouping.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </event>
