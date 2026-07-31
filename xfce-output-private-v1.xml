@@ -55,15 +55,17 @@
   <interface name="xfce_output_v1" version="1">
     <event name="serial">
       <description summary="Advertises the serial number of a device">
-        Emitted on creation of the xfce_output_v1 instance.
+        This informs the client of the output's hardware serial number.
 
-        This informs the client of the output's hardware serial number. If the
-        hardware does not report a serial number, this event will be emitted
-        with an empty string in the serial argument.
+        This event is emitted on creation of the xfce_output_v1 instance, if the
+        serial number is available.
 
         Since the serial number will never change during the lifetime of this
         output object, it is safe to assume you will only get this event
         once for each xfce_output_v1.
+
+        This event is a property that is a part of the 'done' grouping. See the
+        xfce_output_v1.done event for more information.
       </description>
       <arg name="serial" type="string"/>
     </event>
@@ -74,14 +76,18 @@
 
     <event name="edid">
       <description summary="Advertises the EDID of a device">
-        Emitted on creation of the xfce_output_v1 instance.
-
         The EDID data is raw binary data exposed by the monitor's hardware and
         will need to be parsed in order to be useful.
+
+        This event is emitted on creation of the xfce_output_v1 instance, if the
+        EDID is available.
 
         Since the EDID will never change during the lifetime of this output
         object, it is safe to assume you will only get this event once for each
         xfce_output_v1.
+
+        This event is a property that is a part of the 'done' grouping. See the
+        xfce_output_v1.done event for more information.
       </description>
       <arg name="fd" type="fd" summary="A file descriptor that can be mapped into memory"/>
       <arg name="size" type="uint" summary="The size of the memory region referred to by fd"/>
@@ -95,6 +101,9 @@
 
         Since only one output can be primary, receiving this event means that
         the previous primary output is no longer primary.
+
+        This event is a property that is a part of the 'done' grouping. See the
+        xfce_output_v1.done event for more information.
       </description>
     </event>
 
@@ -110,12 +119,29 @@
         details), with the (0, 0) origin in the top-left corner.
 
         The workarea event will always be emitted after binding the object, even
-        if the coordinates and size represent the full output area.
+        if the coordinates and size represent the full output area. It will be
+        emitted again any time the workarea changes.
+
+        This event is a property that is a part of the 'done' grouping. See the
+        xfce_output_v1.done event for more information.
       </description>
       <arg name="x" type="int" summary="x-origin of the workarea"/>
       <arg name="y" type="int" summary="y-origin of the workarea"/>
       <arg name="width" type="uint" summary="Width of the workarea"/>
       <arg name="height" type="uint" summary="Height of the workarea"/>
+    </event>
+
+    <event name="done">
+      <description summary="Initial properties have been sent">
+        Sent after a grouping of event properties has been sent.
+
+        After initially creating the object, all known properties will be sent
+        before this event is sent. When properties change, their events will be
+        succeeded by this event.
+
+        See the individual events to learn which events are part of the initial
+        'done' group.
+      </description>
     </event>
 
     <event name="pointer_enter">
@@ -127,6 +153,8 @@
 
         This event will be emitted at bind time to inform new clients of the
         output the pointer is currently on.
+
+        Note that this event is _not_ part of the 'done' group.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </event>
@@ -136,6 +164,8 @@
         The pointer for a seat can only be on one output at a time, so this
         event will never be emitted without being preceded by a pointer_enter
         event on the same object.
+
+        Note that this event is _not_ part of the 'done' group.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </event>
