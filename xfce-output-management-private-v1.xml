@@ -25,7 +25,7 @@
     SOFTWARE.
   </copyright>
 
-  <interface name="xfce_output_manager_private_v1" version="1">
+  <interface name="xfce_output_management_manager_private_v1" version="1">
     <description summary="Xfce output manager extensions">
       This protocol advertises extensions to the wlr_output_management_v1
       protocol.
@@ -38,8 +38,8 @@
       This protocol depends on the wlr_output_management_v1 protocol.
 
       Clients that wish to use it MAY bind to both wlr_output_manager_v1 and
-      xfce_output_manager_private_v1, but MUST then ignore any events on
-      wlr_output_manager_v1. This allows for simplicity in the client
+      xfce_output_management_manager_private_v1, but MUST then ignore any events
+      on wlr_output_manager_v1. This allows for simplicity in the client
       implementation. For ease of use, the client should immediately release
       any wlr_output_head_v1 instances received from the wlr_output_manager_v1
       global, and, if sharing the same wlr_output_head_v1 listener between the
