@@ -43,7 +43,7 @@
         This creates a new xfce_output_v1 object for the given xdg_output.
       </description>
       <arg name="id" type="new_id" interface="xfce_output_v1"/>
-      <arg name="output" type="object" interface="xdg_ouput" summary="Output to request a xfce_output_v1 object for"/>
+      <arg name="output" type="object" interface="zxdg_output_v1" summary="Output to request a xfce_output_v1 object for"/>
     </request>
   </interface>
 
