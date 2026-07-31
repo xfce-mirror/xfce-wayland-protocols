@@ -28,22 +28,23 @@
   <interface name="xfce_output_manager_private_v1" version="1">
     <description summary="Xfce output extensions">
       This protocol advertises extensions to the existing wl_output and
-      xdg_output protocols.
+      xdg_output_v1 protocols.
 
       It is intended to be private to the Xfce desktop implementation, and
       should not be used by other applications. This protocol may introduce
       incompatible changes at any time, without warning, and without following
       normal, accepted guidelines about Wayland protocol versioning.
 
-      This protocol depends on the wl_output and xdg_output protocols.
+      This protocol depends on the wl_output protocol (with a soft dependency on
+      the xdg_output_v1 protocol).
     </description>
 
     <request name="get_xfce_output">
       <description summary="Fetches a new xfce_output_v1 instance">
-        This creates a new xfce_output_v1 object for the given xdg_output.
+        This creates a new xfce_output_v1 object for the given wl_output.
       </description>
       <arg name="id" type="new_id" interface="xfce_output_v1"/>
-      <arg name="output" type="object" interface="zxdg_output_v1" summary="Output to request a xfce_output_v1 object for"/>
+      <arg name="output" type="object" interface="wl_output" summary="Output to request a xfce_output_v1 object for"/>
     </request>
 
     <request name="release" type="destructor">
@@ -105,7 +106,7 @@
         area taken up by the panel or dock would be excluded by the workkarea.
 
         Coordinates and size are presented in output-relative, logical
-        coordinates that may be scaled (see xdg_output.logical_size for
+        coordinates that may be scaled (see xdg_output_v1.logical_size for
         details), with the (0, 0) origin in the top-left corner.
 
         The workarea event will always be emitted after binding the object, even
